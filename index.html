@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galilee School Fees Calculator</title>
+    <style>
+        body {
+            background-color: #9fd3c7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        h1{
+          text-align:center;
+          margin-top:0px;
+        }
+        form {
+            background-color: rgb(222 239 235);
+            padding: 20px;
+            border: 1px solid grey;
+            width:90%;
+            max-width:350px;
+        }
+        input[type="number"], select {
+            border: 1px solid grey;
+            border-radius: 10px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        input[type="number"] {
+            outline: none;
+            width: 50px;
+            text-align: center;
+        }
+        .row {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .label {
+            flex-grow: 1;
+        }
+        .fee, .total, .actual-fee {
+            text-align: right;
+            min-width: 100px;
+            padding-right: 10px;
+        }
+        .total-row, .discount-row {
+            border-top: 1px solid rgba(0,0,0,0.3);
+            font-weight: bold;
+            padding: 15px 0 5px 0;
+        }
+        .instalment-plan {
+            border-top: 1px solid rgba(0,0,0,0.3);
+            padding: 10px 0 5px 0;
+        }
+        .instal{
+          float:right;
+          padding-right:10px;
+        }
+    </style>
+</head>
+<body>
+    <form id="feeCalculator">
+        <h1>Galilee Fees</h1>
+        <!-- Dynamic rows will be inserted here -->
+        <div class="row instalment-plan" id="instalmentPlan">
+            <label for="paymentPlan">Payment Plan:</label>
+            <select id="paymentPlan"></select>
+        </div>
+        <div class="row total-row"><span class="label">Total Fee:</span> <span class="total" id="totalFee">$0.00</span></div>
+        <div id="instalmentDetails"></div>
+    </form>
+
+    <script>
+        const config = {
+            year: 2024,
+            familyFee: 2670.00,
+            maintenanceLevy: 335.00,
+            upfrontDiscount: 250.00,
+            startDate: '2024-02-25',
+            gradeFees: [
+                { id: "Prep", fee: 1155.00 },
+                { id: "Grade 1", fee: 1155.00 },
+                { id: "Grade 2", fee: 1200.00 },
+                { id: "Grade 3", fee: 1615.00 },
+                { id: "Grade 4", fee: 1675.00 },
+                { id: "Grade 5", fee: 1975.00 },
+                { id: "Grade 6", fee: 2245.00 }
+            ],
+            paymentPlans: [
+                { id: "upfront", label: "Pay Upfront" },
+                { id: "3", label: "3 Instalments" },
+                { id: "7", label: "7 Monthly Instalments" },
+                { id: "14", label: "14 Fortnightly Instalments" }
+            ]
+        };
+
+        document.getElementById('feeCalculator').querySelector('h1').textContent = `${config.year} Galilee Fees`;
+
+        function createRow(label, id, isFee = false) {
+            const row = document.createElement('div');
+            row.className = 'row';
+            if (isFee) {
+                row.innerHTML = `<span class="label">${label}:</span> <input type="number" id="${id}" value="0"> <span class="actual-fee" id="${id}Fee"></span>`;
+            } else {
+                row.innerHTML = `<span class="label">${label}:</span> <span class="fee">${id}</span>`;
+            }
+            document.getElementById('instalmentPlan').before(row);
+        }
+
+        function setupPaymentPlan() {
+            const select = document.getElementById('paymentPlan');
+            config.paymentPlans.forEach(plan => {
+                const option = document.createElement('option');
+                option.value = plan.id;
+                option.textContent = plan.label;
+                select.appendChild(option);
+            });
+        }
+
+        function calculateTotal() {
+            let totalFee = config.familyFee + config.maintenanceLevy;
+            config.gradeFees.forEach(grade => {
+                const qty = parseInt(document.getElementById(grade.id).value, 10) || 0;
+                const fee = grade.fee * qty;
+                document.getElementById(`${grade.id}Fee`).textContent = qty > 0 ? `$${fee.toFixed(2)}` : '';
+                totalFee += fee;
+            });
+
+            const paymentPlan = document.getElementById('paymentPlan').value;
+            const discountRow = document.getElementById('discountRow');
+            if (paymentPlan === 'upfront') {
+                totalFee -= config.upfrontDiscount;
+                discountRow.style.display = '';
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            document.getElementById('totalFee').textContent = `$${totalFee.toFixed(2)}`;
+            calculateInstalments(totalFee, paymentPlan);
+        }
+
+function calculateInstalments(totalFee, plan) {
+    const instalmentDetails = document.getElementById('instalmentDetails');
+    instalmentDetails.innerHTML = ''; // Clear previous details
+
+    const startDate = new Date(config.startDate);
+    let dates = [];
+    let instalmentAmount;
+    let output = '';
+
+    switch (plan) {
+        case 'upfront':
+            // No instalments needed for upfront payment
+            break;
+        case '3':
+            instalmentAmount = totalFee / 3;
+            dates = [new Date(startDate), new Date(startDate.setMonth(startDate.getMonth() + 3)), new Date(startDate.setMonth(startDate.getMonth() + 3))];
+            break;
+        case '7':
+            instalmentAmount = totalFee / 7;
+            for (let i = 0; i < 7; i++) {
+                dates.push(new Date(startDate.setMonth(startDate.getMonth() + (i === 0 ? 0 : 1))));
+            }
+            break;
+        case '14':
+            instalmentAmount = totalFee / 14;
+            for (let i = 0; i < 14; i++) {
+                if (i === 0) {
+                    dates.push(new Date(startDate));
+                } else {
+                    dates.push(new Date(startDate.setDate(startDate.getDate() + 14)));
+                }
+            }
+            break;
+        default:
+            // No plan selected or an unrecognized plan
+            return;
+    }
+
+    dates.forEach((date, index) => {
+        const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        output += `<div>${index + 1} (${formattedDate}): <span class="instal"> $${instalmentAmount.toFixed(2)}</span></div>`;
+    });
+
+    instalmentDetails.innerHTML = output;
+}
+
+
+        function setup() {
+            createRow('Family Fee', `$${config.familyFee.toFixed(2)}`);
+            createRow('Maintenance Levy', `$${config.maintenanceLevy.toFixed(2)}`);
+            config.gradeFees.forEach(grade => createRow(grade.id, grade.id, true));
+
+            const discountRow = document.createElement('div');
+            discountRow.className = 'row discount-row';
+            discountRow.id = 'discountRow';
+            discountRow.style.display = 'none';
+            discountRow.innerHTML = `<span class="label">Up-front Payment Discount:</span> <span class="total">-$${config.upfrontDiscount.toFixed(2)}</span>`;
+            document.getElementById('instalmentPlan').before(discountRow);
+
+            setupPaymentPlan();
+            
+            document.querySelectorAll('input[type="number"], #paymentPlan').forEach(element => {
+                element.addEventListener('change', calculateTotal);
+            });
+            
+            document.getElementById('paymentPlan').addEventListener('change', calculateTotal);
+            calculateTotal(); // Initial calculation
+             
+            
+        }
+
+        setup();
+    </script>
+</body>
+</html>
