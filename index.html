@@ -5,147 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Galilee School Fees Calculator</title>
   <style>
-    /* -----------------------------
-       Modern, accessible UI styles
-       ----------------------------- */
     :root{
-      --bg: #0f172a;           /* slate-900 */
-      --panel: #0b3b35;        /* deep teal tint */
-      --panel-2: #0e4b44;      /* slightly lighter */
-      --muted: #9fbcb7;        /* desaturated teal */
-      --brand: #00bfa6;        /* teal accent */
-      --brand-2: #64dfcb;      /* lighter accent */
-      --txt: #eefcf9;          /* near-white */
-      --txt-soft:#cfeae5;
-      --ring: rgba(0,191,166,0.6);
-      --error:#ef4444;
-      --ok:#22c55e;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 16px;
+      --bg:#0f172a; --panel:#0b3b35; --panel-2:#0e4b44; --muted:#9fbcb7; --brand:#00bfa6; --brand-2:#64dfcb;
+      --txt:#eefcf9; --txt-soft:#cfeae5; --ring:rgba(0,191,166,.6); --error:#ef4444; --ok:#22c55e;
+      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:16px;
     }
-
     [data-theme="light"]{
-      --bg:#e9fbf6;
-      --panel:#ffffff;
-      --panel-2:#f4fffd;
-      --muted:#4c6b66;
-      --brand:#0ea5a6;
-      --brand-2:#10b981;
-      --txt:#0b1f1c;
-      --txt-soft:#3b5a55;
-      --ring: rgba(16,185,129,.45);
-      --shadow: 0 10px 30px rgba(19,72,58,.15);
+      --bg:#e9fbf6; --panel:#fff; --panel-2:#f4fffd; --muted:#4c6b66; --brand:#0ea5a6; --brand-2:#10b981;
+      --txt:#0b1f1c; --txt-soft:#3b5a55; --ring:rgba(16,185,129,.45); --shadow:0 10px 30px rgba(19,72,58,.15);
     }
-
-    *{ box-sizing: border-box }
-    html,body{ height:100% }
-
+    *{box-sizing:border-box} html,body{height:100%}
     body{
-      margin:0;
-      background: radial-gradient(1200px 800px at 10% -10%, rgba(16,185,129,.12), transparent 40%),
-                  radial-gradient(1000px 700px at 90% -20%, rgba(14,165,166,.10), transparent 50%),
-                  var(--bg);
-      color: var(--txt);
-      font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      display:grid;
-      place-items:center;
-      padding:24px;
+      margin:0; background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(16,185,129,.12), transparent 40%),
+        radial-gradient(1000px 700px at 90% -20%, rgba(14,165,166,.10), transparent 50%),
+        var(--bg);
+      color:var(--txt); font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,"Helvetica Neue",Arial;
+      display:grid; place-items:center; padding:24px;
     }
-
-    .app{
-      width:min(980px, 100%);
-      display:grid;
-      gap:22px;
-    }
-
-    .card{
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border: 1px solid rgba(0,0,0,.06);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: clamp(18px, 2.5vw, 28px);
-    }
-
-    .header{
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-    }
-    .title{ font-size: clamp(20px, 1.6rem, 28px); margin:0; letter-spacing:.2px }
-    .subtitle{ margin:6px 0 0; color:var(--txt-soft); font-size:.95rem }
-
-    .year-switch{
-      display:flex; align-items:center; gap:10px; color:var(--muted);
-    }
-    .chip{
-      border-radius: 999px; padding:6px 12px; background: rgba(16,185,129,.12); color: var(--brand);
-      border: 1px solid rgba(16,185,129,.25); font-weight:600; letter-spacing:.2px;
-    }
-
-    .grid{ display:grid; gap:14px }
-    @media (min-width: 860px){
-      .grid-cols{ grid-template-columns: 1.1fr .9fr }
-    }
-
-    .fieldset{ display:grid; gap:12px }
-    .row{ display:grid; grid-template-columns: 1fr auto auto; gap:10px; align-items:center }
-    .row .label{ color: var(--txt) }
-
-    .mono{ font-variant-numeric: tabular-nums; font-feature-settings: "tnum" on, "cv03" on }
-
-    input[type="number"]{
-      width:80px; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.10);
-      background:#fff; color:#0a1c19; text-align:center; font-weight:600;
-      outline: none; transition: box-shadow .15s ease, border-color .15s ease;
-    }
-    input[type="number"]:focus{ border-color: var(--brand); box-shadow: 0 0 0 4px var(--ring) }
-
-    .steppers{ display:flex; align-items:center; gap:8px }
-    .btn{
-      appearance:none; border:1px solid rgba(0,0,0,.10); background:#fff; color:#0a1c19; font-weight:700;
-      border-radius: 12px; padding:8px 12px; cursor:pointer; transition: transform .05s ease, box-shadow .2s ease;
-    }
-    .btn:hover{ box-shadow: 0 4px 14px rgba(0,0,0,.08) }
-    .btn:active{ transform: translateY(1px) }
-
-    select{
-      width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.1); background:#fff; color:#0a1c19;
-      font-weight:600; outline:none; transition: box-shadow .15s ease, border-color .15s ease;
-    }
-    select:focus{ border-color: var(--brand); box-shadow: 0 0 0 4px var(--ring) }
-
-    .divider{ height:1px; background: linear-gradient(90deg, rgba(0,0,0,.06), rgba(0,0,0,.12), rgba(0,0,0,.06)); margin: 8px 0 }
-
-    .totals{
-      display:grid; gap:8px; background: linear-gradient(180deg, rgba(16,185,129,.12), transparent);
-      border-radius:12px; padding:12px; border: 1px dashed rgba(16,185,129,.35)
-    }
-    .totals .line{ display:flex; align-items:center; justify-content:space-between }
-    .discount{ color: var(--ok) }
-    .strike{ text-decoration: line-through; opacity:.65 }
-
-    .schedule{ display:grid; gap:10px }
-    .schedule .item{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; background: rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.06) }
-
-    .muted{ color: var(--muted) }
-
-    .footer-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end }
-
-    .pill{ border-radius:999px; padding:10px 14px; border:1px solid rgba(0,0,0,.1); background:#fff; cursor:pointer; font-weight:700 }
-    .pill.primary{ background: linear-gradient(180deg, var(--brand), var(--brand-2)); color:white; border:none }
-
-    .right{ text-align:right }
-    .sm{ font-size:.9rem }
-
-    .note{ font-size:.85rem; color: var(--muted) }
-    .help{ color: var(--muted) }
+    .app{width:min(980px,100%); display:grid; gap:22px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid rgba(0,0,0,.06);
+      border-radius:var(--radius); box-shadow:var(--shadow); padding:clamp(18px,2.5vw,28px)}
+    .header{display:flex; align-items:center; justify-content:space-between; gap:16px}
+    .title{font-size:clamp(20px,1.6rem,28px); margin:0; letter-spacing:.2px}
+    .year-switch{display:flex; align-items:center; gap:10px; color:var(--muted)}
+    .chip{border-radius:999px; padding:6px 12px; background:rgba(16,185,129,.12); color:var(--brand);
+      border:1px solid rgba(16,185,129,.25); font-weight:600; letter-spacing:.2px}
+    .grid{display:grid; gap:14px}
+    @media (min-width:860px){ .grid-cols{grid-template-columns:1.1fr .9fr} }
+    .fieldset{display:grid; gap:12px}
+    .row{display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center}
+    .mono{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" on,"cv03" on}
+    input[type="number"]{width:80px; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.10);
+      background:#fff; color:#0a1c19; text-align:center; font-weight:600; outline:none;
+      transition:box-shadow .15s ease,border-color .15s ease}
+    input[type="number"]:focus{border-color:var(--brand); box-shadow:0 0 0 4px var(--ring)}
+    .steppers{display:flex; align-items:center; gap:8px}
+    .btn{appearance:none; border:1px solid rgba(0,0,0,.10); background:#fff; color:#0a1c19; font-weight:700;
+      border-radius:12px; padding:8px 12px; cursor:pointer; transition:transform .05s, box-shadow .2s}
+    .btn:hover{box-shadow:0 4px 14px rgba(0,0,0,.08)} .btn:active{transform:translateY(1px)}
+    select{width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.1); background:#fff; color:#0a1c19;
+      font-weight:600; outline:none; transition:box-shadow .15s ease,border-color .15s ease}
+    select:focus{border-color:var(--brand); box-shadow:0 0 0 4px var(--ring)}
+    .divider{height:1px; background:linear-gradient(90deg, rgba(0,0,0,.06), rgba(0,0,0,.12), rgba(0,0,0,.06)); margin:8px 0}
+    .totals{display:grid; gap:8px; background:linear-gradient(180deg, rgba(16,185,129,.12), transparent);
+      border-radius:12px; padding:12px; border:1px dashed rgba(16,185,129,.35)}
+    .totals .line{display:flex; align-items:center; justify-content:space-between}
+    .discount{color:var(--ok)} .muted{color:var(--muted)}
+    .schedule{display:grid; gap:10px}
+    .schedule .item{display:flex; justify-content:space-between; align-items:center; padding:10px 12px;
+      border-radius:12px; background:rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.06)}
+    .footer-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .pill{border-radius:999px; padding:10px 14px; border:1px solid rgba(0,0,0,.1); background:#fff; cursor:pointer; font-weight:700}
+    .pill.primary{background:linear-gradient(180deg,var(--brand),var(--brand-2)); color:#fff; border:none}
+    .right{text-align:right} .sm{font-size:.9rem} .note{font-size:.85rem; color:var(--muted)}
+    .help{color:var(--muted)}
   </style>
 </head>
 <body>
   <main class="app">
     <section class="card">
       <div class="header">
-        <div>
-          <h1 class="title" id="appTitle">Galilee Fees</h1>
-        </div>
+        <h1 class="title" id="appTitle">Galilee Fees</h1>
         <div class="year-switch" aria-live="polite">
           <span class="chip" id="yearChip">—</span>
         </div>
@@ -155,11 +76,8 @@
     <section class="card grid grid-cols" aria-labelledby="calcHeading">
       <div>
         <h2 id="calcHeading" class="help" style="margin:0 0 8px 0">Select grades & payment plan</h2>
-
         <div class="fieldset" id="gradeFields"></div>
-
         <div class="divider"></div>
-
         <label for="paymentPlan" class="help" style="font-weight:700">Payment plan</label>
         <select id="paymentPlan" aria-describedby="planHelp"></select>
         <p class="note" id="planHelp">Choose Upfront, 3-part, 7 monthly, or 14 fortnightly payments.</p>
@@ -176,12 +94,15 @@
           <div class="line discount" id="discountLine" style="display:none"><span>Up-front discount</span><strong class="mono" id="upfrontDisc">−$0.00</strong></div>
           <div class="line" style="font-size:1.15rem"><span>Total</span><strong class="mono" id="totalFee">$0.00</strong></div>
         </div>
+        <p class="note" style="margin-top:10px">Prices are in AUD. Figures auto-update as you change quantities or plans.</p>
       </div>
     </section>
 
     <section class="card" aria-labelledby="instalHeading">
       <h2 id="instalHeading" class="help" style="margin:0 0 8px 0">Instalment schedule</h2>
       <div id="instalmentDetails" class="schedule"></div>
+      <!-- ✅ Restored: start date element that JS writes to -->
+      <p class="note">Start date: <span id="startDateLabel" class="mono"></span></p>
       <div class="footer-actions">
         <button class="pill" id="resetBtn" type="button">Reset</button>
         <button class="pill primary" id="saveBtn" type="button">Save my selections</button>
@@ -196,40 +117,21 @@
     const YEARLY = {
       year: 2026,
       startDateISO: '2026-02-25',
-
-      // Fees/discounts
       upfrontDiscount: 250.00,
-
-      // If your school publishes a single combined figure for Family Fee + Building Maintenance,
-      // put it here and set maintenanceLevy to 0. (Or set combined to 0 and use a split below.)
       familyFeeAndMaintenanceCombined: 3646.00,
-      maintenanceLevy: 0.00, // set >0 only if you're splitting the line out
-
-      // Labels (if you ever need to change text that appears in the UI)
+      maintenanceLevy: 0.00,
       labels: {
         familyLine: 'Family Fee',
         maintenanceLine: 'Maintenance Levy',
         combinedFamilyLine: 'Family Fee & Building Maintenance',
-        gradePrefix: 'Year' // used for "Year 1".."Year 6"
+        gradePrefix: 'Year'
       },
-
-      // Per-student levies
-      levies: {
-        Prep: 1219.00,
-        1: 1219.00,
-        2: 1270.00,
-        3: 1709.00,
-        4: 1769.00,
-        5: 2086.00,
-        6: 2204.00
-      },
-
-      // Payment plans (usually unchanged)
+      levies: { Prep:1219, 1:1219, 2:1270, 3:1709, 4:1769, 5:2086, 6:2204 },
       paymentPlans: [
-        { id: 'upfront', label: 'Pay Upfront' },
-        { id: '3',       label: '3 Instalments' },
-        { id: '7',       label: '7 Monthly Instalments' },
-        { id: '14',      label: '14 Fortnightly Instalments' }
+        { id:'upfront', label:'Pay Upfront' },
+        { id:'3', label:'3 Instalments' },
+        { id:'7', label:'7 Monthly Instalments' },
+        { id:'14', label:'14 Fortnightly Instalments' }
       ]
     };
 
@@ -237,45 +139,21 @@
     // Derived config (no edits needed below)
     // -----------------------------------------
     const config = (() => {
-      // Build grade list from levies
-      const gradeFees = [
-        { id: 'Prep', fee: YEARLY.levies.Prep }
-      ].concat(
-        [1,2,3,4,5,6].map(n => ({
-          id: `${YEARLY.labels.gradePrefix} ${n}`,
-          fee: YEARLY.levies[n]
-        }))
-      );
-
-      // Family + maintenance handling
-      const familyFee =
-        YEARLY.familyFeeAndMaintenanceCombined && YEARLY.familyFeeAndMaintenanceCombined > 0
-          ? YEARLY.familyFeeAndMaintenanceCombined
-          : 0;
-
+      const gradeFees = [{ id:'Prep', fee:YEARLY.levies.Prep }]
+        .concat([1,2,3,4,5,6].map(n => ({ id:`${YEARLY.labels.gradePrefix} ${n}`, fee:YEARLY.levies[n] })));
+      const familyFee = YEARLY.familyFeeAndMaintenanceCombined > 0 ? YEARLY.familyFeeAndMaintenanceCombined : 0;
       const maintenanceLevy = YEARLY.maintenanceLevy || 0;
-
-      // Which label to show for family line
-      const familyLabel = (familyFee > 0 && maintenanceLevy === 0)
-        ? YEARLY.labels.combinedFamilyLine
-        : YEARLY.labels.familyLine;
-
+      const familyLabel = (familyFee > 0 && maintenanceLevy === 0) ? YEARLY.labels.combinedFamilyLine : YEARLY.labels.familyLine;
       return {
-        year: YEARLY.year,
-        startDate: YEARLY.startDateISO,
-        upfrontDiscount: YEARLY.upfrontDiscount,
-        familyFee,
-        maintenanceLevy,
-        familyLabel,
-        maintenanceLabel: YEARLY.labels.maintenanceLine,
-        gradeFees,
-        paymentPlans: YEARLY.paymentPlans
+        year: YEARLY.year, startDate: YEARLY.startDateISO, upfrontDiscount: YEARLY.upfrontDiscount,
+        familyFee, maintenanceLevy, familyLabel, maintenanceLabel: YEARLY.labels.maintenanceLine,
+        gradeFees, paymentPlans: YEARLY.paymentPlans
       };
     })();
 
-    // Currency & date helpers
-    const AUD = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' });
-    const formatDate = (d) => d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    // Helpers
+    const AUD = new Intl.NumberFormat('en-AU', { style:'currency', currency:'AUD' });
+    const formatDate = d => d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 
     // Elements
     const appTitle = document.getElementById('appTitle');
@@ -293,28 +171,23 @@
     const upfrontDisc = document.getElementById('upfrontDisc');
     const instalmentDetails = document.getElementById('instalmentDetails');
     const startDateLabel = document.getElementById('startDateLabel');
-
     const resetBtn = document.getElementById('resetBtn');
     const saveBtn = document.getElementById('saveBtn');
 
-    // Persist/restore simple state
+    // Persist/restore
     const STORAGE_KEY = 'galilee-fees-v3';
     const saveState = () => {
       const state = {
         plan: paymentPlanSelect.value,
-        quantities: Object.fromEntries(
-          config.gradeFees.map(g => [g.id, Number(document.getElementById(inputId(g.id)).value || 0)])
-        )
+        quantities: Object.fromEntries(config.gradeFees.map(g => [g.id, Number(document.getElementById(inputId(g.id)).value || 0)]))
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     };
-    const loadState = () => {
-      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') }catch{ return null }
-    };
+    const loadState = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') } catch { return null } };
 
-    // Utility: stable IDs
-    const inputId = (label) => 'qty-' + label.toLowerCase().replace(/\s+/g,'-');
-    const feeId = (label) => 'fee-' + label.toLowerCase().replace(/\s+/g,'-');
+    // Utilities
+    const inputId = label => 'qty-' + label.toLowerCase().replace(/\s+/g,'-');
+    const feeId   = label => 'fee-' + label.toLowerCase().replace(/\s+/g,'-');
 
     // Build UI
     function setupUI(){
@@ -325,11 +198,10 @@
 
       familyFeeEl.textContent = AUD.format(config.familyFee);
       maintFeeEl.textContent = AUD.format(config.maintenanceLevy);
-
-      // If maintenance is zero (because combined), hide the row for clarity
       maintRowEl.style.display = (config.maintenanceLevy === 0) ? 'none' : '';
 
-      startDateLabel.textContent = new Date(config.startDate).toISOString().slice(0,10);
+      // ✅ Null-safe: only write if the node exists
+      if (startDateLabel) startDateLabel.textContent = new Date(config.startDate).toISOString().slice(0,10);
 
       // Grades
       gradeFields.innerHTML = '';
@@ -337,14 +209,15 @@
         const row = document.createElement('div');
         row.className = 'row';
         row.innerHTML = `
-          <div class="label"><strong>${g.id}</strong><div class="note">Per student: <span class="mono">${AUD.format(g.fee)}</span></div></div>
+          <div class="label"><strong>${g.id}</strong>
+            <div class="note">Per student: <span class="mono">${AUD.format(g.fee)}</span></div>
+          </div>
           <div class="steppers" aria-label="Quantity for ${g.id}">
             <button class="btn" type="button" data-step="-1" data-target="${inputId(g.id)}" aria-label="decrease ${g.id}">−</button>
             <input type="number" id="${inputId(g.id)}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" value="0" aria-label="${g.id} quantity" />
             <button class="btn" type="button" data-step="1" data-target="${inputId(g.id)}" aria-label="increase ${g.id}">+</button>
           </div>
-          <div class="right mono sm" id="${feeId(g.id)}"></div>
-        `;
+          <div class="right mono sm" id="${feeId(g.id)}"></div>`;
         gradeFields.appendChild(row);
       });
 
@@ -352,40 +225,34 @@
       paymentPlanSelect.innerHTML = '';
       config.paymentPlans.forEach(p => {
         const opt = document.createElement('option');
-        opt.value = p.id; opt.textContent = p.label; paymentPlanSelect.appendChild(opt);
+        opt.value = p.id; opt.textContent = p.label;
+        paymentPlanSelect.appendChild(opt);
       });
 
       // Listeners
-      gradeFields.addEventListener('click', (e)=>{
-        const btn = e.target.closest('button[data-step]');
-        if(!btn) return;
+      gradeFields.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-step]'); if(!btn) return;
         const id = btn.getAttribute('data-target');
         const step = Number(btn.getAttribute('data-step'));
         const input = document.getElementById(id);
-        const val = Math.max(0, (parseInt(input.value||'0',10) + step));
-        input.value = val; 
+        input.value = Math.max(0, (parseInt(input.value||'0',10) + step));
         recalc();
       });
-
-      gradeFields.addEventListener('input', (e)=>{
+      gradeFields.addEventListener('input', e => {
         if(e.target.matches('input[type="number"]')){
           const n = Math.max(0, parseInt(e.target.value||'0',10));
-          e.target.value = Number.isFinite(n) ? n : 0;
-          recalc();
+          e.target.value = Number.isFinite(n) ? n : 0; recalc();
         }
       });
-
       paymentPlanSelect.addEventListener('change', recalc);
 
-      resetBtn.addEventListener('click', ()=>{
+      resetBtn.addEventListener('click', () => {
         localStorage.removeItem(STORAGE_KEY);
-        setupUI(); // rebuild
-        recalc();
+        setupUI(); recalc();
       });
+      saveBtn.addEventListener('click', () => { saveState(); saveBtn.textContent='Saved ✓'; setTimeout(()=> saveBtn.textContent='Save my selections', 1200); });
 
-      saveBtn.addEventListener('click', ()=>{ saveState(); saveBtn.textContent='Saved ✓'; setTimeout(()=> saveBtn.textContent='Save my selections', 1200); });
-
-      // Load saved state if any
+      // Restore
       const saved = loadState();
       if(saved){
         paymentPlanSelect.value = saved.plan || 'upfront';
@@ -396,19 +263,15 @@
       }
     }
 
-    // Calculation logic (unchanged)
     function recalc(){
-      // Base fees
       let total = config.familyFee + config.maintenanceLevy;
 
-      // Grade fees and breakdown
       gradesBreakdown.innerHTML = '';
       const frag = document.createDocumentFragment();
       config.gradeFees.forEach(g => {
         const qty = parseInt(document.getElementById(inputId(g.id)).value, 10) || 0;
         if(qty > 0){
-          const fee = g.fee * qty;
-          total += fee;
+          const fee = g.fee * qty; total += fee;
           const line = document.createElement('div');
           line.className = 'line';
           line.innerHTML = `<span>${g.id} × ${qty}</span><strong class="mono">${AUD.format(fee)}</strong>`;
@@ -420,7 +283,6 @@
       });
       gradesBreakdown.appendChild(frag);
 
-      // Discount only if upfront
       const plan = paymentPlanSelect.value;
       if(plan === 'upfront'){
         total -= YEARLY.upfrontDiscount;
@@ -431,48 +293,26 @@
       }
 
       totalFeeEl.textContent = AUD.format(total);
-
-      // Build schedule
       renderSchedule(total, plan);
-
-      // Persist silently
       saveState();
     }
 
-    // Non-mutating date helpers
     const addMonths = (date, n) => { const d = new Date(date); const day = d.getDate(); d.setMonth(d.getMonth() + n);
-      if(d.getDate() < day){ d.setDate(0); }
-      return d; };
-    const addDays = (date, n) => { const d = new Date(date); d.setDate(d.getDate() + n); return d };
+      if(d.getDate() < day){ d.setDate(0); } return d; };
+    const addDays = (date, n) => { const d = new Date(date); d.setDate(d.getDate() + n); return d; };
 
     function renderSchedule(total, plan){
       instalmentDetails.innerHTML = '';
       const start = new Date(config.startDate);
       const items = [];
+      if(plan === 'upfront'){ items.push({ when:start, amount:total }); }
+      else if(plan === '3'){ const amt = total/3; items.push({when:addMonths(start,0),amount:amt},{when:addMonths(start,3),amount:amt},{when:addMonths(start,6),amount:amt}); }
+      else if(plan === '7'){ const amt = total/7; for(let i=0;i<7;i++) items.push({when:addMonths(start,i),amount:amt}); }
+      else if(plan === '14'){ const amt = total/14; for(let i=0;i<14;i++) items.push({when:addDays(start,14*i),amount:amt}); }
 
-      if(plan === 'upfront'){
-        items.push({ when: start, amount: total });
-      } else if(plan === '3'){
-        const amt = total / 3;
-        items.push({ when: addMonths(start, 0), amount: amt });
-        items.push({ when: addMonths(start, 3), amount: amt });
-        items.push({ when: addMonths(start, 6), amount: amt });
-      } else if(plan === '7'){
-        const amt = total / 7;
-        for(let i=0;i<7;i++) items.push({ when: addMonths(start, i), amount: amt });
-      } else if(plan === '14'){
-        const amt = total / 14;
-        for(let i=0;i<14;i++) items.push({ when: addDays(start, 14*i), amount: amt });
-      }
-
-      // Correct floating rounding so last item absorbs remainder (to keep exact total)
       const sumWithoutLast = items.slice(0,-1).reduce((s,i)=> s + Math.round(i.amount*100)/100, 0);
-      if(items.length > 0){
-        const last = items[items.length-1];
-        last.amount = Math.round((total - sumWithoutLast) * 100) / 100; // exact cents
-      }
+      if(items.length){ items[items.length-1].amount = Math.round((total - sumWithoutLast) * 100) / 100; }
 
-      // Render
       const frag = document.createDocumentFragment();
       items.forEach((it, idx) => {
         const el = document.createElement('div');
@@ -483,9 +323,9 @@
       instalmentDetails.appendChild(frag);
     }
 
-    // Init
     setupUI();
     recalc();
   </script>
 </body>
 </html>
+``
