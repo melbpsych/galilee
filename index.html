@@ -148,7 +148,7 @@
           <p class="subtitle">Fast, friendly calculator with clear instalments.</p>
         </div>
         <div class="year-switch" aria-live="polite">
-          <span class="chip" id="yearChip">2024</span>
+          <span class="chip" id="yearChip">—</span>
         </div>
       </div>
     </section>
@@ -169,15 +169,15 @@
       <div>
         <h2 class="help" style="margin:0 0 8px 0">Summary</h2>
         <div class="totals" aria-live="polite">
-          <div class="line"><span>Family Fee</span><strong class="mono" id="familyFee">$0.00</strong></div>
-          <div class="line"><span>Maintenance Levy</span><strong class="mono" id="maintFee">$0.00</strong></div>
+          <div class="line"><span id="familyLabel">Family Fee</span><strong class="mono" id="familyFee">$0.00</strong></div>
+          <div class="line" id="maintRow"><span id="maintLabel">Maintenance Levy</span><strong class="mono" id="maintFee">$0.00</strong></div>
           <div class="divider"></div>
           <div id="gradesBreakdown"></div>
           <div class="divider"></div>
-          <div class="line discount" id="discountLine" style="display:none"><span>Up‑front discount</span><strong class="mono" id="upfrontDisc">−$0.00</strong></div>
+          <div class="line discount" id="discountLine" style="display:none"><span>Up-front discount</span><strong class="mono" id="upfrontDisc">−$0.00</strong></div>
           <div class="line" style="font-size:1.15rem"><span>Total</span><strong class="mono" id="totalFee">$0.00</strong></div>
         </div>
-        <p class="note" style="margin-top:10px">Prices are in AUD. Figures auto‑update as you change quantities or plans.</p>
+        <p class="note" style="margin-top:10px">Prices are in AUD. Figures auto-update as you change quantities or plans.</p>
       </div>
     </section>
 
@@ -193,31 +193,88 @@
   </main>
 
   <script>
-    // -----------------------------
-    // Configuration
-    // -----------------------------
-    const config = {
-      year: 2024,
-      familyFee: 2670.00,
-      maintenanceLevy: 335.00,
+    // ============================================================
+    // 🔧 YEARLY SETTINGS — update these each year (single section)
+    // ============================================================
+    const YEARLY = {
+      year: 2026,
+      startDateISO: '2026-02-25',
+
+      // Fees/discounts
       upfrontDiscount: 250.00,
-      startDate: '2024-02-25', // ISO format
-      gradeFees: [
-        { id: "Prep", fee: 1155.00 },
-        { id: "Grade 1", fee: 1155.00 },
-        { id: "Grade 2", fee: 1200.00 },
-        { id: "Grade 3", fee: 1615.00 },
-        { id: "Grade 4", fee: 1675.00 },
-        { id: "Grade 5", fee: 1975.00 },
-        { id: "Grade 6", fee: 2245.00 }
-      ],
+
+      // If your school publishes a single combined figure for Family Fee + Building Maintenance,
+      // put it here and set maintenanceLevy to 0. (Or set combined to 0 and use a split below.)
+      familyFeeAndMaintenanceCombined: 3646.00,
+      maintenanceLevy: 0.00, // set >0 only if you're splitting the line out
+
+      // Labels (if you ever need to change text that appears in the UI)
+      labels: {
+        familyLine: 'Family Fee',
+        maintenanceLine: 'Maintenance Levy',
+        combinedFamilyLine: 'Family Fee & Building Maintenance',
+        gradePrefix: 'Year' // used for "Year 1".."Year 6"
+      },
+
+      // Per-student levies
+      levies: {
+        Prep: 1219.00,
+        1: 1219.00,
+        2: 1270.00,
+        3: 1709.00,
+        4: 1769.00,
+        5: 2086.00,
+        6: 2204.00
+      },
+
+      // Payment plans (usually unchanged)
       paymentPlans: [
         { id: 'upfront', label: 'Pay Upfront' },
-        { id: '3', label: '3 Instalments' },
-        { id: '7', label: '7 Monthly Instalments' },
-        { id: '14', label: '14 Fortnightly Instalments' }
-      ],
+        { id: '3',       label: '3 Instalments' },
+        { id: '7',       label: '7 Monthly Instalments' },
+        { id: '14',      label: '14 Fortnightly Instalments' }
+      ]
     };
+
+    // -----------------------------------------
+    // Derived config (no edits needed below)
+    // -----------------------------------------
+    const config = (() => {
+      // Build grade list from levies
+      const gradeFees = [
+        { id: 'Prep', fee: YEARLY.levies.Prep }
+      ].concat(
+        [1,2,3,4,5,6].map(n => ({
+          id: `${YEARLY.labels.gradePrefix} ${n}`,
+          fee: YEARLY.levies[n]
+        }))
+      );
+
+      // Family + maintenance handling
+      const familyFee =
+        YEARLY.familyFeeAndMaintenanceCombined && YEARLY.familyFeeAndMaintenanceCombined > 0
+          ? YEARLY.familyFeeAndMaintenanceCombined
+          : 0;
+
+      const maintenanceLevy = YEARLY.maintenanceLevy || 0;
+
+      // Which label to show for family line
+      const familyLabel = (familyFee > 0 && maintenanceLevy === 0)
+        ? YEARLY.labels.combinedFamilyLine
+        : YEARLY.labels.familyLine;
+
+      return {
+        year: YEARLY.year,
+        startDate: YEARLY.startDateISO,
+        upfrontDiscount: YEARLY.upfrontDiscount,
+        familyFee,
+        maintenanceLevy,
+        familyLabel,
+        maintenanceLabel: YEARLY.labels.maintenanceLine,
+        gradeFees,
+        paymentPlans: YEARLY.paymentPlans
+      };
+    })();
 
     // Currency & date helpers
     const AUD = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' });
@@ -232,6 +289,9 @@
     const totalFeeEl = document.getElementById('totalFee');
     const familyFeeEl = document.getElementById('familyFee');
     const maintFeeEl = document.getElementById('maintFee');
+    const familyLabelEl = document.getElementById('familyLabel');
+    const maintLabelEl = document.getElementById('maintLabel');
+    const maintRowEl = document.getElementById('maintRow');
     const discountLine = document.getElementById('discountLine');
     const upfrontDisc = document.getElementById('upfrontDisc');
     const instalmentDetails = document.getElementById('instalmentDetails');
@@ -241,7 +301,7 @@
     const saveBtn = document.getElementById('saveBtn');
 
     // Persist/restore simple state
-    const STORAGE_KEY = 'galilee-fees-v2';
+    const STORAGE_KEY = 'galilee-fees-v3';
     const saveState = () => {
       const state = {
         plan: paymentPlanSelect.value,
@@ -263,8 +323,15 @@
     function setupUI(){
       appTitle.textContent = `${config.year} Galilee Fees`;
       yearChip.textContent = String(config.year);
+      familyLabelEl.textContent = config.familyLabel;
+      maintLabelEl.textContent = config.maintenanceLabel;
+
       familyFeeEl.textContent = AUD.format(config.familyFee);
       maintFeeEl.textContent = AUD.format(config.maintenanceLevy);
+
+      // If maintenance is zero (because combined), hide the row for clarity
+      maintRowEl.style.display = (config.maintenanceLevy === 0) ? 'none' : '';
+
       startDateLabel.textContent = new Date(config.startDate).toISOString().slice(0,10);
 
       // Grades
@@ -332,7 +399,7 @@
       }
     }
 
-    // Calculation logic (kept equivalent to original)
+    // Calculation logic (unchanged)
     function recalc(){
       // Base fees
       let total = config.familyFee + config.maintenanceLevy;
@@ -359,9 +426,9 @@
       // Discount only if upfront
       const plan = paymentPlanSelect.value;
       if(plan === 'upfront'){
-        total -= config.upfrontDiscount;
+        total -= YEARLY.upfrontDiscount;
         discountLine.style.display = '';
-        upfrontDisc.textContent = '−' + AUD.format(config.upfrontDiscount).replace('A$','');
+        upfrontDisc.textContent = '−' + AUD.format(YEARLY.upfrontDiscount).replace('A$','');
       } else {
         discountLine.style.display = 'none';
       }
@@ -377,7 +444,6 @@
 
     // Non-mutating date helpers
     const addMonths = (date, n) => { const d = new Date(date); const day = d.getDate(); d.setMonth(d.getMonth() + n);
-      // Fix for month overflow (e.g., adding to Jan 31)
       if(d.getDate() < day){ d.setDate(0); }
       return d; };
     const addDays = (date, n) => { const d = new Date(date); d.setDate(d.getDate() + n); return d };
@@ -388,7 +454,6 @@
       const items = [];
 
       if(plan === 'upfront'){
-        // No instalments for upfront, but show a single line for clarity
         items.push({ when: start, amount: total });
       } else if(plan === '3'){
         const amt = total / 3;
